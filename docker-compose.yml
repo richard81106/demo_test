@@ -1,0 +1,15 @@
+version: '3.2.3'
+services:
+  db:
+    image: mysql:8.0.13
+    environment:
+       MYSQL_USER: root
+       MYSQL_ROOT_PASSWORD: 1234
+       MYSQL_DATABASE: test
+       SPRING_DATASOURCE_URL: jdbc:mysql://localhost:3306/test
+       SPRING_DATABASE_USERNAME: root
+       SPRING_DATABASE_PASSWORD: 1234
+    ports:
+      - 3306:3306
+
+
