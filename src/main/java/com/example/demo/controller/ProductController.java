@@ -1,10 +1,11 @@
 package com.example.demo.controller;
 
-import com.example.demo.model.ExternalApiModel;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import  org.springframework.http.ResponseEntity;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import com.example.demo.entity.Product;
 import com.example.demo.service.ProductService;
+import com.example.demo.service.PriceService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
@@ -15,10 +16,16 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/products")
-public class ProducrController {
+public class ProductController {
 
     @Autowired
     private ProductService productService;
+
+    @Autowired
+    private PriceService PriceService;
+
+    @Autowired
+    private PriceService priceRepo;
 
     @GetMapping("/callExternalApi")
     public ResponseEntity<Map<String, Object>> callExternalApi(@RequestParam String queryType,
@@ -49,33 +56,54 @@ public class ProducrController {
     }
 
     @GetMapping("/findAll")
-    public List<Product> getAllProducts(){
-        return productService.getProducts();
+    public List<Product> getAllProducts(@RequestParam(required = false) String name,
+                                        @RequestParam(required = false) String date){
+        return productService.getProducts(name, date);
+    }
+
+    @GetMapping("/getPriceChange")
+    public ResponseEntity<Map<String, Object>> getPriceChange(@RequestParam(required = true) String startDate,
+                                                              @RequestParam(required = true) String endDate){
+        Map<String, Object> response = PriceService.getProductGroup(startDate, endDate);
+        if(response.get("code").toString().equals("200")){
+            return ResponseEntity.ok().body(response);
+        }
+        else{
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+        }
     }
 
     @PostMapping("/insert")
-    public Product insert(@RequestBody Product product){
-        return productService.insertProduct(product);
+    public ResponseEntity<Map<String, Object>> insert(@RequestBody Product product) {
+        Map<String, Object> response = productService.insertProduct(product);
+        if(response.get("code").toString().equals("200")){
+            return ResponseEntity.ok().body(response);
+        }
+        else{
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+        }
     }
 
+
     @PostMapping("/delete/{id}")
-    public String delete(@PathVariable Integer id){
-        try{
-            productService.deleteProduct(id);
-            return "刪除成功";
-        }catch (Exception e){
-            return "刪除失敗";
+    public ResponseEntity<Map<String, Object>> delete(@PathVariable Integer id){
+        Map<String, Object> response = productService.deleteProduct(id);;
+        if(response.get("code").toString().equals("200")){
+            return ResponseEntity.ok().body(response);
+        }
+        else{
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
         }
     }
 
     @PostMapping("/update/{id}")
-    public String update(@PathVariable Integer id,@RequestBody Product product){
-        try{
-            productService.updateProduct(id, product);
-            return "更新成功";
-        }catch (Exception e){
-            return "更新失敗";
+    public ResponseEntity<Map<String, Object>> update(@PathVariable Integer id,@RequestBody Product product){
+        Map<String, Object> response = productService.updateProduct(id, product);
+        if(response.get("code").toString().equals("200")){
+            return ResponseEntity.ok().body(response);
         }
-        
+        else{
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+        }
     }
 }

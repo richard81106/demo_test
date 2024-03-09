@@ -17,5 +17,5 @@ public class Product {
     private Integer id;
     private String name;
     private double price;
-    private Integer qty;
+    private String date;
 }
